@@ -15,6 +15,9 @@ export default function Home() {
             <Link href="#how-it-works" className="hover:text-gold transition-colors">
               How It Works
             </Link>
+            <Link href="/tokens" className="hover:text-gold transition-colors">
+              Tokens
+            </Link>
             <ConnectWalletButton />
             <Link
               href="/create"
