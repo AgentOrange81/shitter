@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+:root {
+  /* Shit brown theme */
+  --shit-light: #d4c4a8;
+  --shit-medium: #8b7355;
+  --shit-dark: #5c4a32;
+  --shit-darker: #3d2f21;
+  --shit-brown: #6b4423;
+  
+  /* Accent */
+  --gold: #d4af37;
+  --gold-light: #f4d03f;
+  
+  /* Neutrals */
+  --cream: #f5f0e6;
+  --tan: #c9b896;
+  
+  --background: var(--cream);
+  --foreground: var(--shit-darker);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-shit-light: var(--shit-light);
+  --color-shit-medium: var(--shit-medium);
+  --color-shit-dark: var(--shit-dark);
+  --color-shit-darker: var(--shit-darker);
+  --color-shit-brown: var(--shit-brown);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-cream: var(--cream);
+  --color-tan: var(--tan);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
