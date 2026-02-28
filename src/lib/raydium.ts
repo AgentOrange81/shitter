@@ -15,81 +15,6 @@ import { NATIVE_MINT } from "@solana/spl-token";
 
 const SOLANA_RPC = process.env.NEXT_PUBLIC_SOLANA_RPC || "https://api.mainnet-beta.solana.com";
 
-/**
- * Grind for a vanity keypair - token address ends with "shit"
- * Uses worker threads for performance
- */
-export async function grindVanityKeypair(suffix: string = "shit"): Promise<Keypair> {
-  const { Keypair } = await import("@solana/web3.js");
-  
-  const targetSuffix = suffix.toLowerCase();
-  const targetBytes = new TextEncoder().encode(targetSuffix);
-  const targetLength = targetBytes.length;
-  
-  let keypair: Keypair;
-  let found = false;
-  let iterations = 0;
-  const maxIterations = 10000000; // Safety limit
-  
-  while (!found && iterations < maxIterations) {
-    keypair = Keypair.generate();
-    const pubkeyBytes = keypair.publicKey.toBytes();
-    const pubkeySuffix = pubkeyBytes.slice(-targetLength);
-    
-    // Compare last bytes
-    let match = true;
-    for (let i = 0; i < targetLength; i++) {
-      if (pubkeySuffix[i] !== targetBytes[i]) {
-        match = false;
-        break;
-      }
-    }
-    
-    if (match) {
-      found = true;
-      console.log(`Found vanity keypair after ${iterations} iterations`);
-      return keypair;
-    }
-    
-    iterations++;
-    
-    // Log progress every 100k iterations
-    if (iterations % 100000 === 0) {
-      console.log(`Grinding... ${iterations} iterations`);
-    }
-  }
-  
-  throw new Error(`Could not find vanity keypair after ${maxIterations} iterations`);
-}
-
-/**
- * Generate multiple vanity keypairs and pick the best one
- */
-export async function grindVanityKeypairMultiple(suffixes: string[]): Promise<Keypair> {
-  let bestKeypair: Keypair | null = null;
-  let bestSuffix = "";
-  
-  for (const suffix of suffixes) {
-    try {
-      const keypair = await grindVanityKeypair(suffix);
-      if (!bestKeypair || suffix.length > bestSuffix.length) {
-        bestKeypair = keypair;
-        bestSuffix = suffix;
-      }
-    } catch (e) {
-      console.log(`Failed to find suffix: ${suffix}`);
-    }
-  }
-  
-  if (!bestKeypair) {
-    // Fallback to random
-    const { Keypair } = await import("@solana/web3.js");
-    return Keypair.generate();
-  }
-  
-  return bestKeypair;
-}
-
 export interface TokenLaunchParams {
   name: string;
   symbol: string;
@@ -153,8 +78,8 @@ export async function createLaunchpadToken(
       owner,
     });
 
-    // Generate new mint keypair with vanity address (ends in "shit")
-    const mintKeypair = await grindVanityKeypair("shit");
+    // Generate new mint keypair (random)
+    const mintKeypair = Keypair.generate();
 
     // Get config ID
     const configId = getLaunchpadConfigId();
