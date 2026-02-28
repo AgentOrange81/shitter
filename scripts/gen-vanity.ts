@@ -1,94 +1,83 @@
 import { Keypair } from "@solana/web3.js";
 import fs from "fs";
 
-// Grind for vanity keypairs
-function grindVanityKeypair(suffix: string): Keypair | null {
-  const targetSuffix = suffix.toLowerCase();
-  const targetBytes = new TextEncoder().encode(targetSuffix);
-  const targetLength = targetBytes.length;
-  
+const targetSuffix = "shit";
+const targetBytes = Buffer.from(targetSuffix);
+const targetLength = targetBytes.length;
+
+function grindVanityKeypair(): Keypair | null {
   let iterations = 0;
-  const maxIterations = 500000;
+  const reportEvery = 100000;
   
-  while (iterations < maxIterations) {
+  while (true) {
     const keypair = Keypair.generate();
     const pubkeyBytes = keypair.publicKey.toBytes();
     const pubkeySuffix = pubkeyBytes.slice(-targetLength);
     
     let match = true;
-    for (let i = 0; i < targetLength; i++) {
-      if (pubkeySuffix[i] !== targetBytes[i]) {
+    for (let j = 0; j < targetLength; j++) {
+      if (pubkeySuffix[j] !== targetBytes[j]) {
         match = false;
         break;
       }
     }
     
+    iterations++;
+    
     if (match) {
+      console.log(`\n✅ FOUND after ${iterations.toLocaleString()} iterations!`);
       return keypair;
     }
     
-    iterations++;
+    if (iterations % reportEvery === 0) {
+      console.log(`Progress: ${iterations.toLocaleString()}`);
+    }
   }
-  
-  return null;
 }
 
 async function main() {
-  // Try multiple suffixes to get 10
-  const suffixes = ["shit", "hit", "sit", "pit", "xit", "shat", "shot", "shet", "shut", "shat"];
-  const vanityMints: Array<{ publicKey: string; privateKey: number[]; suffix: string }> = [];
+  console.log(`Generating vanity mints ending in "${targetSuffix}"...`);
+  console.log(`This will take a while. Press Ctrl+C to stop.\n`);
   
-  console.log(`Generating 10 vanity mints...\n`);
+  const vanityMints: Array<{ publicKey: string; privateKey: string }> = [];
   
-  for (const suffix of suffixes) {
-    if (vanityMints.length >= 10) break;
+  while (vanityMints.length < 10) {
+    console.log(`\n--- Generating #${vanityMints.length + 1}/10 ---`);
     
-    console.log(`Trying suffix "${suffix}"...`);
-    const result = grindVanityKeypair(suffix);
+    const result = grindVanityKeypair();
     
-    if (result) {
-      console.log(`✅ Found: ${result.publicKey.toBase58()} (ends in ${suffix})`);
-      vanityMints.push({
-        publicKey: result.publicKey.toBase58(),
-        privateKey: Array.from(result.secretKey),
-        suffix,
-      });
-    } else {
-      console.log(`❌ Could not find "${suffix}" in 500k tries`);
+    if (!result) {
+      console.log(`Failed to generate, retrying...`);
+      continue;
     }
+    
+    console.log(`Found: ${result.publicKey.toBase58()}`);
+    vanityMints.push({
+      publicKey: result.publicKey.toBase58(),
+      privateKey: Buffer.from(result.secretKey).toString("base64")
+    });
+    
+    // Save after each
+    const privateData = {
+      generated: new Date().toISOString(),
+      count: vanityMints.length,
+      suffix: targetSuffix,
+      mints: vanityMints,
+    };
+    fs.writeFileSync("./vanity-mints.json", JSON.stringify(privateData, null, 2));
+    
+    const publicData = {
+      generated: new Date().toISOString(),
+      count: vanityMints.length,
+      suffix: targetSuffix,
+      mints: vanityMints.map(m => m.publicKey),
+    };
+    fs.writeFileSync("./vanity-mints-public.json", JSON.stringify(publicData, null, 2));
+    
+    console.log(`Saved: ${vanityMints.length}/10`);
   }
   
-  if (vanityMints.length === 0) {
-    console.log("\nFalling back to random mints...");
-    for (let i = 0; i < 10; i++) {
-      const keypair = Keypair.generate();
-      vanityMints.push({
-        publicKey: keypair.publicKey.toBase58(),
-        privateKey: Array.from(keypair.secretKey),
-        suffix: "random",
-      });
-    }
-  }
-  
-  // Save to file
-  const data = {
-    generated: new Date().toISOString(),
-    count: vanityMints.length,
-    mints: vanityMints,
-  };
-  
-  fs.writeFileSync("./vanity-mints.json", JSON.stringify(data, null, 2));
-  console.log(`\n✅ Saved ${vanityMints.length} mints to vanity-mints.json`);
-  
-  // Public only
-  const publicOnly = {
-    generated: new Date().toISOString(),
-    count: vanityMints.length,
-    mints: vanityMints.map(m => m.publicKey),
-  };
-  
-  fs.writeFileSync("./vanity-mints-public.json", JSON.stringify(publicOnly, null, 2));
-  console.log(`✅ Saved public keys to vanity-mints-public.json`);
+  console.log(`\n🎉 All 10 generated!`);
 }
 
 main().catch(console.error);
