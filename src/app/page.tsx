@@ -13,8 +13,7 @@ export default function Home() {
       <nav className="bg-shit-darker text-cream px-4 py-3 md:px-6 md:py-4 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <Link href="/" className="text-xl md:text-2xl font-bold text-gold flex items-center gap-2">
-            <span className="text-2xl md:text-3xl">💩</span>
-            <span className="hidden sm:inline">SHITTER</span>
+            <span className="text-2xl md:text-3xl">💩</span> SHITTER
           </Link>
           
           {/* Desktop Nav */}
@@ -93,7 +92,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="bg-shit-darker text-cream py-16 md:py-24 px-4 md:px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="text-6xl md:text-8xl mb-4 animate-bounce">
+          <div className="text-5xl md:text-7xl mb-4">
             💩
           </div>
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-black mb-4 md:mb-6">
