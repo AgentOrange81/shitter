@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Connection } from "@solana/web3.js";
 
-const SOLANA_RPC = process.env.NEXT_PUBLIC_SOLANA_RPC || "https://api.devnet.solana.com";
+const SOLANA_RPC = process.env.NEXT_PUBLIC_SOLANA_RPC || "https://api.mainnet-beta.solana.com";
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,7 +69,7 @@ export async function GET() {
   return NextResponse.json({
     estimatedCost,
     currency: "SOL",
-    network: "devnet",
+    network: "mainnet",
     breakdown: {
       mintAccountRent: estimatedCost,
       associatedTokenRent: estimatedCost,

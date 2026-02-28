@@ -14,8 +14,8 @@ const WalletContextProvider = ({ children }: { children: React.ReactNode }) => {
     []
   );
 
-  // Use devnet for testing, can change to mainnet-beta later
-  const endpoint = "https://api.devnet.solana.com";
+  // Use mainnet for production
+  const endpoint = "https://api.mainnet-beta.solana.com";
 
   return (
     <ConnectionProvider endpoint={endpoint}>
