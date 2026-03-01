@@ -18,8 +18,7 @@ export default function CreateToken() {
     initialSol: "85", // SOL to raise before migration
     curvePercent: "80", // % of supply on bonding curve
   });
-  const [mintType, setMintType] = useState<"random" | "vanity" | "custom">("random");
-  const [customMint, setCustomMint] = useState("");
+  const [mintType, setMintType] = useState<"random" | "vanity">("random");
   const [socials, setSocials] = useState({
     twitter: "",
     telegram: "",
@@ -77,21 +76,6 @@ export default function CreateToken() {
         }
         
         setStatus(`Found! Mint: ${mintKeypair.publicKey.toBase58().slice(0, 8)}...shit`);
-      } else if (mintType === "custom") {
-        // Validate custom mint address
-        const { PublicKey } = await import("@solana/web3.js");
-        try {
-          new PublicKey(customMint);
-          mintKeypair = { 
-            publicKey: new PublicKey(customMint),
-            // For custom, we can't sign - user must have the private key
-            secretKey: new Uint8Array(0)
-          };
-        } catch {
-          setStatus("Invalid custom mint address");
-          setIsLoading(false);
-          return;
-        }
       } else {
         mintKeypair = generateRandomKeypair();
         setStatus(`Mint: ${mintKeypair.publicKey.toBase58().slice(0, 8)}...`);
@@ -305,7 +289,7 @@ export default function CreateToken() {
                 <label className="block text-sm font-medium text-shit-darker mb-2">
                   Token Address
                 </label>
-                <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="grid grid-cols-2 gap-2 mb-3">
                   <button
                     type="button"
                     onClick={() => setMintType("random")}
@@ -330,25 +314,16 @@ export default function CreateToken() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setMintType("custom")}
+                    onClick={() => setMintType("vanity")}
                     className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                      mintType === "custom" 
+                      mintType === "vanity" 
                         ? "bg-gold text-shit-darker" 
                         : "bg-shit-light text-shit-darker hover:bg-shit-medium"
                     }`}
                   >
-                    ✏️ Custom
+                    💩 Vanity (shit)
                   </button>
                 </div>
-                {mintType === "custom" && (
-                  <input
-                    type="text"
-                    value={customMint}
-                    onChange={(e) => setCustomMint(e.target.value)}
-                    placeholder="Enter your mint address"
-                    className="w-full px-4 py-3 rounded-lg border-2 border-shit-light focus:border-shit-brown focus:outline-none transition-colors font-mono text-sm"
-                  />
-                )}
                 {mintType === "vanity" && (
                   <p className="text-xs text-shit-medium bg-shit-light p-2 rounded">
                     Token address will end in "shit" (may take longer to create)
