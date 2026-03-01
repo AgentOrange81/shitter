@@ -51,12 +51,13 @@ export default function CreateToken() {
     }
 
     setIsLoading(true);
-    setStatus("Creating token...");
+    setStatus("Preparing token...");
     setCreatedToken(null);
 
     try {
       const response = await fetch("/api/create-token", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: formData.name,
           symbol: formData.symbol,
@@ -74,14 +75,14 @@ export default function CreateToken() {
       const result = await response.json();
 
       if (result.success) {
-        setStatus("Token created successfully! 🎉");
-        setCreatedToken(result.tokenMint || result.config?.mintAuthority);
+        setStatus("Token prepared! In production, wallet would prompt to sign.");
+        setCreatedToken(result.mint);
       } else {
         setStatus("Error: " + (result.error || "Unknown error"));
       }
     } catch (error) {
       console.error("Token creation error:", error);
-      setStatus("Failed to create token. See console for details.");
+      setStatus("Failed: " + (error instanceof Error ? error.message : "Unknown error"));
     } finally {
       setIsLoading(false);
     }

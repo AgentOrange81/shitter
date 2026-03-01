@@ -126,9 +126,29 @@ For actual token launches, we can use Raydium's LaunchLab which handles:
 - [x] Landing page with mobile responsive
 - [x] Token creation form UI
 - [x] Wallet connection
+- [x] Token gallery (/tokens)
+- [x] Metadata upload (Pinata)
+- [ ] Vanity address generation (see options below)
 - [ ] Actual token minting (SPL creation)
 - [ ] Raydium pool creation
 - [ ] Token page (view created tokens)
+
+---
+
+## Vanity Address Generation (Future)
+
+### Options
+
+1. **Local GPU + ngrok** — Run SolVanityCL locally, expose via ngrok tunnel, server calls it
+2. **Seed phrase derivation** — Store master seed, derive addresses via BIP44
+3. **Cloud GPU** — Use vast.ai/runpod for one-off generation
+4. **Pre-generate pool** — Generate batch offline, use encrypted storage
+
+### Security
+
+- Never store raw private keys in plain JSON
+- Use encryption at rest OR derive from seed phrase
+- API keys stay server-side (not NEXT_PUBLIC_*)
 
 ---
 
