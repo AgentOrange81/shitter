@@ -312,17 +312,6 @@ export default function CreateToken() {
                   >
                     💩 Vanity (shit)
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setMintType("vanity")}
-                    className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                      mintType === "vanity" 
-                        ? "bg-gold text-shit-darker" 
-                        : "bg-shit-light text-shit-darker hover:bg-shit-medium"
-                    }`}
-                  >
-                    💩 Vanity (shit)
-                  </button>
                 </div>
                 {mintType === "vanity" && (
                   <p className="text-xs text-shit-medium bg-shit-light p-2 rounded">
