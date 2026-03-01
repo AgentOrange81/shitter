@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { generateVanityKeypair, generateRandomKeypair } from "@/lib/vanity";
+import { generateVanityKeypair, generateRandomKeypair, cancelVanitySearch, resetVanitySearch } from "@/lib/vanity";
 
 export default function CreateToken() {
   const { publicKey, connected, sendTransaction } = useWallet();
@@ -28,6 +28,7 @@ export default function CreateToken() {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSearchingVanity, setIsSearchingVanity] = useState(false);
   const [status, setStatus] = useState<string>("");
   const [createdToken, setCreatedToken] = useState<string | null>(null);
 
@@ -59,10 +60,15 @@ export default function CreateToken() {
       let mintKeypair;
       
       if (mintType === "vanity") {
+        setIsSearchingVanity(true);
         setStatus("Generating vanity address... (this may take a while)");
+        resetVanitySearch();
+        
         mintKeypair = await generateVanityKeypair((iterations) => {
           setStatus(`Searching... ${(iterations / 1000).toFixed(0)}k attempts`);
         });
+        
+        setIsSearchingVanity(false);
         
         if (!mintKeypair) {
           setStatus("Vanity generation cancelled");
@@ -178,7 +184,18 @@ export default function CreateToken() {
               {/* Status */}
               {status && (
                 <div className={`p-4 rounded-lg ${createdToken ? "bg-green-100 text-green-800" : "bg-shit-light text-shit-darker"}`}>
-                  {status}
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="flex-1">{status}</span>
+                    {isSearchingVanity && (
+                      <button
+                        type="button"
+                        onClick={() => cancelVanitySearch()}
+                        className="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition-colors whitespace-nowrap"
+                      >
+                        Stop
+                      </button>
+                    )}
+                  </div>
                   {createdToken && (
                     <div className="mt-2 font-mono text-sm break-all">
                       {createdToken}

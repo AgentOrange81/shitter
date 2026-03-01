@@ -4,6 +4,17 @@ const targetSuffix = "shit";
 const targetBytes = new TextEncoder().encode(targetSuffix);
 const targetLength = targetBytes.length;
 
+// Cancellation token - set to true to stop search
+let cancelled = false;
+
+export function cancelVanitySearch() {
+  cancelled = true;
+}
+
+export function resetVanitySearch() {
+  cancelled = false;
+}
+
 /**
  * Generate a vanity keypair - address ends with specified suffix
  * Returns null if cancelled
@@ -11,12 +22,17 @@ const targetLength = targetBytes.length;
 export async function generateVanityKeypair(
   onProgress?: (iterations: number) => void
 ): Promise<Keypair | null> {
+  cancelled = false;
   let iterations = 0;
-  const reportEvery = 50000;
+  const reportEvery = 25000;
   
   return new Promise((resolve) => {
-    // Use setImmediate to not block the main thread too much
     const check = () => {
+      if (cancelled) {
+        resolve(null);
+        return;
+      }
+      
       const keypair = Keypair.generate();
       const pubkeyBytes = keypair.publicKey.toBytes();
       const pubkeySuffix = pubkeyBytes.slice(-targetLength);
