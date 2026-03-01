@@ -1,36 +1,124 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Shitter - Solana Meme Coin Launchpad
 
-## Getting Started
+A meme coin launchpad on Solana using Raydium LaunchLab. Create tokens with random or vanity addresses ending in "shit".
 
-First, run the development server:
+## Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Framework:** Next.js 16 (App Router)
+- **Styling:** Tailwind CSS
+- **Blockchain:** Solana Web3.js
+- **Token Protocol:** Raydium LaunchPad SDK (@raydium-io/raydium-sdk-v2)
+- **Wallet:** @solana/wallet-adapter
+- **Deployment:** Vercel
+
+## Architecture
+
+### Client-Side (`/src/app`)
+- **Wallet Connection:** Solana Wallet Adapter
+- **Vanity Generation:** Browser-based keypair search (loops until address ends in "shit")
+- **Token Creation Form:** Collects name, symbol, supply, curve settings, socials
+
+### Server-Side API (`/src/app/api`)
+- `/api/create-token` - Builds Raydium LaunchPad transaction
+- `/api/upload-metadata` - Uploads token metadata to IPFS via Pinata
+
+### Key Libraries
+- `@solana/web3.js` - Solana interactions
+- `@solana/wallet-adapter-react` - Wallet connection UI
+- `@raydium-io/raydium-sdk-v2` - Raydium LaunchPad integration
+- `@solana/spl-token` - Token operations
+- `pinata-web3` - IPFS metadata storage
+
+## How It Works
+
+### Token Creation Flow
+
+1. **User fills form:**
+   - Token name, symbol, description
+   - Supply (e.g., 1,000,000,000)
+   - Initial SOL to raise (e.g., 85 SOL)
+   - Curve percentage (e.g., 80% of supply on bonding curve)
+
+2. **Mint Address Options:**
+   - **Random:** Instant keypair generation
+   - **Vanity (shit):** Browser loops generating keypairs until address ends in "shit" (~1.7M average attempts)
+   - **Custom:** User provides own mint address
+
+3. **Server builds transaction:**
+   - Uses Raydium SDK to create launchpad pool
+   - Returns serialized transaction (base64)
+
+4. **Client signs & submits:**
+   - Wallet signs the transaction
+   - For vanity: also signs with mint keypair private key
+   - Submits to Solana network
+
+### Vanity Search Implementation
+
+```typescript
+// /src/lib/vanity.ts
+const targetSuffix = "shit";
+// Loops generating Keypair until publicKey ends with "shit"
+// Reports progress every 25k attempts
+// Can be cancelled via cancelVanitySearch()
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Raydium SDK Integration
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```typescript
+// /src/app/api/create-token/route.ts
+const result = await raydium.launchpad.createLaunchpad({
+  mintA: mintPubkey,
+  decimals: 6,
+  name,
+  symbol,
+  configId, // Raydium launch config
+  migrateType: "cpmm",
+  supply: supplyBN,
+  totalSellA,
+  totalFundRaisingB,
+  // ... curve parameters
+});
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment Variables
 
-## Learn More
+```env
+NEXT_PUBLIC_SOLANA_RPC=https://api.mainnet-beta.solana.com
+PINATA_JWT=your_pinata_jwt
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Development
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+cd shitter
+npm install
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+```bash
+vercel --prod
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Deployed to: **https://shitter-red.vercel.app**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Important Notes
+
+- **Mint decimals:** Raydium LaunchPad requires 6 decimals
+- **Minimum supply:** Must meet Raydium's min supply requirement
+- **Vanity generation:** Runs in browser to avoid server load. ~1.7M average attempts for 4-char suffix
+- **Custom mints:** User must have the private key to sign transactions
+
+## History
+
+| Commit | Description |
+|--------|-------------|
+| 216206e | Add cancel/stop button for vanity search |
+| 7d6e407 | Add client-side vanity keypair generation |
+| 539b8d8 | Add wallet signing flow structure |
+| c4eca8e | Add Pinata metadata upload API |
+| b5570a1 | Add mint type option: random/vanity/custom |
+| 47fa49d | Add Raydium SDK and LaunchLab integration |
+| 420fce3 | Initial commit |
