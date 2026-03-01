@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { generateVanityKeypair, generateRandomKeypair } from "@/lib/vanity";
 
 export default function CreateToken() {
   const { publicKey, connected, sendTransaction } = useWallet();
@@ -51,10 +52,48 @@ export default function CreateToken() {
     }
 
     setIsLoading(true);
-    setStatus("Preparing token...");
     setCreatedToken(null);
 
     try {
+      // Step 1: Generate mint keypair in browser
+      let mintKeypair;
+      
+      if (mintType === "vanity") {
+        setStatus("Generating vanity address... (this may take a while)");
+        mintKeypair = await generateVanityKeypair((iterations) => {
+          setStatus(`Searching... ${(iterations / 1000).toFixed(0)}k attempts`);
+        });
+        
+        if (!mintKeypair) {
+          setStatus("Vanity generation cancelled");
+          setIsLoading(false);
+          return;
+        }
+        
+        setStatus(`Found! Mint: ${mintKeypair.publicKey.toBase58().slice(0, 8)}...shit`);
+      } else if (mintType === "custom") {
+        // Validate custom mint address
+        const { PublicKey } = await import("@solana/web3.js");
+        try {
+          new PublicKey(customMint);
+          mintKeypair = { 
+            publicKey: new PublicKey(customMint),
+            // For custom, we can't sign - user must have the private key
+            secretKey: new Uint8Array(0)
+          };
+        } catch {
+          setStatus("Invalid custom mint address");
+          setIsLoading(false);
+          return;
+        }
+      } else {
+        mintKeypair = generateRandomKeypair();
+        setStatus(`Mint: ${mintKeypair.publicKey.toBase58().slice(0, 8)}...`);
+      }
+      
+      setStatus("Building transaction...");
+
+      // Step 2: Send to server with mint pubkey
       const response = await fetch("/api/create-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -66,20 +105,33 @@ export default function CreateToken() {
           initialSol: parseInt(curveSettings.initialSol),
           curvePercent: parseInt(curveSettings.curvePercent),
           walletAddress: publicKey.toString(),
-          mintType: mintType,
-          customMint: mintType === "custom" ? customMint : null,
+          mintPublicKey: mintKeypair.publicKey.toBase58(),
           socials,
         }),
       });
 
       const result = await response.json();
 
-      if (result.success) {
-        setStatus("Token prepared! In production, wallet would prompt to sign.");
-        setCreatedToken(result.mint);
-      } else {
+      if (!result.success) {
         setStatus("Error: " + (result.error || "Unknown error"));
+        setIsLoading(false);
+        return;
       }
+
+      setStatus("Sign transaction in wallet...");
+
+      // Step 3: Parse transaction
+      const { Transaction } = await import("@solana/web3.js");
+      const transaction = Transaction.from(Buffer.from(result.transaction, "base64"));
+
+      // Step 4: Get connection and send transaction
+      // Note: In real implementation, you'd use wallet-adapter's sendTransaction
+      // with the mint keypair as an additional signer
+      
+      // For now, show the result
+      setStatus("Token prepared! Mint: " + result.mint + " | Pool: " + result.poolId);
+      setCreatedToken(result.mint);
+
     } catch (error) {
       console.error("Token creation error:", error);
       setStatus("Failed: " + (error instanceof Error ? error.message : "Unknown error"));

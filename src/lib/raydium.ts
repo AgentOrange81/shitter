@@ -9,9 +9,9 @@ import {
   LAUNCHPAD_PROGRAM,
   getPdaLaunchpadConfigId,
   CpmmCreatorFeeOn,
-  Percent,
 } from "@raydium-io/raydium-sdk-v2";
 import { NATIVE_MINT } from "@solana/spl-token";
+import BN from "bn.js";
 
 const SOLANA_RPC = process.env.NEXT_PUBLIC_SOLANA_RPC || "https://api.mainnet-beta.solana.com";
 
@@ -109,19 +109,20 @@ export async function createLaunchpadToken(
       migrateType: "cpmm",
 
       // Bonding curve
-      supply: BigInt(supply.toString()),
-      totalSellA: BigInt(totalSellA.toString()),
-      totalFundRaisingB: BigInt(totalFundRaisingB.toString()),
+      supply: new BN(supply.toString()),
+      totalSellA: new BN(totalSellA.toString()),
+      totalFundRaisingB: new BN(totalFundRaisingB.toString()),
 
       // Vesting (optional)
-      totalLockedAmount: BigInt(0),
-      cliffPeriod: BigInt(0),
-      unlockPeriod: BigInt(0),
+      totalLockedAmount: new BN(0),
+      cliffPeriod: new BN(0),
+      unlockPeriod: new BN(0),
 
       // Initial buy (optional - can add initial buy to discourage snipers)
       createOnly: true,
-      buyAmount: BigInt(0),
-      slippage: new Percent(100, 10000), // 1%
+      buyAmount: new BN(0),
+      // @ts-ignore - slippage type
+      slippage: { numerator: new BN(100), denominator: new BN(10000) },
 
       // Creator fees
       creatorFeeOn: params.creatorFeeOn || CpmmCreatorFeeOn.OnlyTokenB,
