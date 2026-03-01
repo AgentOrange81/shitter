@@ -28,6 +28,7 @@
    - Social links (Twitter, Telegram, Website) ✅
    - Wallet connection required ✅
    - API endpoint for creation ✅
+   - Metadata upload (Pinata/IPFS) ✅
    - **Raydium pool creation** — To do
 
 3. **Token Gallery** ✅
@@ -135,7 +136,8 @@ For actual token launches, we can use Raydium's LaunchLab which handles:
 
 ```env
 NEXT_PUBLIC_SOLANA_RPC=https://api.mainnet-beta.solana.com
-# or devnet: https://api.devnet.solana.com
+PINATA_API_KEY=your_pinata_api_key
+PINATA_API_SECRET=your_pinata_api_secret
 ```
 
 ---
