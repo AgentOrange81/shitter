@@ -174,7 +174,7 @@ export default function CreateToken() {
       <div className="max-w-2xl mx-auto py-8 md:py-12 px-4">
         <div className="bg-white rounded-2xl shadow-xl border-2 border-shit-light p-6 md:p-8">
           <h1 className="text-2xl md:text-3xl font-bold text-shit-darker mb-2">
-            Create Your Token 🚀
+            Create Your Token v2
           </h1>
           <p className="text-shit-medium mb-6">
             Launch on Raydium with automatic liquidity migration
