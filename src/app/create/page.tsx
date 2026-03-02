@@ -335,10 +335,10 @@ export default function CreateToken() {
                 {mintType === "vanity" && (
                   <div className="bg-shit-light p-2 rounded">
                     <p className="text-xs text-shit-medium">
-                      <strong>Parallel Workers:</strong> Using {workerCount || "detecting..."} workers for faster search
+                      🔍 Using {workerCount || "detecting..."} parallel workers
                     </p>
                     <p className="text-xs text-shit-medium mt-1">
-                      Token address will end in "shit" (~1.7M attempts average)
+                      Token will end in <strong>"shit"</strong> (~1.7M tries avg)
                     </p>
                   </div>
                 )}
