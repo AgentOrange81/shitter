@@ -93,7 +93,7 @@ export default function CreateToken() {
             },
             (keypair) => {
               setGeneratedMint(keypair);
-              setStatus(`Found! Mint: ${keypair.publicKey.toBase58().slice(0, 8)}...shit`);
+              setStatus(`Found! Mint: ${keypair.publicKey.toBase58().slice(0, 8)}... ready!`);
               resolve(keypair);
             }
           );
