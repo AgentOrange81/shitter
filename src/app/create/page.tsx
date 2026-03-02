@@ -22,7 +22,7 @@ export default function CreateToken() {
   const [curveSettings, setCurveSettings] = useState({
     initialSol: "85",
     curvePercent: "80",
-    supply: "",
+    supply: "1000000000",
   });
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [mintType, setMintType] = useState<"random" | "vanity">("random");
@@ -68,7 +68,7 @@ export default function CreateToken() {
       setError("Token symbol is required.");
       return;
     }
-    if (!curveSettings.supply || parseInt(curveSettings.supply) < 10000000) {
+    if (parseInt(curveSettings.supply) < 10000000) {
       setError("Minimum supply is 10,000,000 tokens.");
       return;
     }
