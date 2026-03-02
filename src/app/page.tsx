@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import ConnectWalletButton from "@/components/ConnectWalletButton";
+import { playFartSound } from "@/lib/fart-sound";
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -92,7 +93,9 @@ export default function Home() {
       {/* Hero Section */}
       <section className="bg-shit-darker text-cream py-16 md:py-24 px-4 md:px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="text-5xl md:text-7xl mb-4 animate-bounce">
+          <div className="text-5xl md:text-7xl mb-4 animate-bounce cursor-pointer" 
+               onClick={playFartSound}
+               title="Click for a surprise!">
             💩
           </div>
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-black mb-4 md:mb-6">

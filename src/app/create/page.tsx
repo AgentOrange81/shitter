@@ -4,10 +4,16 @@ import Link from "next/link";
 import { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { generateVanityKeypair, generateRandomKeypair, cancelVanitySearch, resetVanitySearch } from "@/lib/vanity";
+import { Keypair } from "@solana/web3.js";
+import { useVanityWorkers } from "@/hooks/useVanityWorkers";
+import { generateRandomKeypair } from "@/lib/vanity";
+import { getUserFriendlyError, withRetry, TokenValidationError } from "@/lib/errors";
+import { ErrorDisplay, LoadingSpinner } from "@/components/ErrorBoundary";
 
 export default function CreateToken() {
-  const { publicKey, connected, sendTransaction } = useWallet();
+  const { publicKey, connected } = useWallet();
+  const { isSearching, iterations, workerCount, startSearch, stopSearch } = useVanityWorkers();
+  
   const [formData, setFormData] = useState({
     name: "",
     symbol: "",
@@ -15,8 +21,8 @@ export default function CreateToken() {
     supply: "",
   });
   const [curveSettings, setCurveSettings] = useState({
-    initialSol: "85", // SOL to raise before migration
-    curvePercent: "80", // % of supply on bonding curve
+    initialSol: "85",
+    curvePercent: "80",
   });
   const [mintType, setMintType] = useState<"random" | "vanity">("random");
   const [socials, setSocials] = useState({
@@ -27,9 +33,10 @@ export default function CreateToken() {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSearchingVanity, setIsSearchingVanity] = useState(false);
   const [status, setStatus] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
   const [createdToken, setCreatedToken] = useState<string | null>(null);
+  const [generatedMint, setGeneratedMint] = useState<Keypair | null>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -47,35 +54,55 @@ export default function CreateToken() {
     e.preventDefault();
     
     if (!publicKey) {
-      setStatus("Please connect your wallet first!");
+      setError("Please connect your wallet first!");
       return;
     }
 
+    // Validate form
+    if (!formData.name || formData.name.length < 2) {
+      setError("Token name must be at least 2 characters.");
+      return;
+    }
+    if (!formData.symbol || formData.symbol.length < 1) {
+      setError("Token symbol is required.");
+      return;
+    }
+    if (!formData.supply || parseInt(formData.supply) < 10000000) {
+      setError("Minimum supply is 10,000,000 tokens.");
+      return;
+    }
+
+    setError(null);
     setIsLoading(true);
     setCreatedToken(null);
+    setGeneratedMint(null);
 
     try {
-      // Step 1: Generate mint keypair in browser
-      let mintKeypair;
+      // Step 1: Generate mint keypair
+      let mintKeypair: Keypair;
       
       if (mintType === "vanity") {
-        setIsSearchingVanity(true);
-        setStatus("Generating vanity address... (this may take a while)");
-        resetVanitySearch();
+        setStatus(`Searching with ${workerCount} workers...`);
         
-        mintKeypair = await generateVanityKeypair((iterations) => {
-          setStatus(`Searching... ${(iterations / 1000).toFixed(0)}k attempts`);
+        // Use Web Workers for parallel generation
+        mintKeypair = await new Promise<Keypair>((resolve, reject) => {
+          startSearch(
+            (iter) => {
+              setStatus(`Searching... ${(iter / 1000).toFixed(0)}k attempts (${workerCount} workers)`);
+            },
+            (keypair) => {
+              setGeneratedMint(keypair);
+              setStatus(`Found! Mint: ${keypair.publicKey.toBase58().slice(0, 8)}...shit`);
+              resolve(keypair);
+            }
+          );
         });
-        
-        setIsSearchingVanity(false);
         
         if (!mintKeypair) {
           setStatus("Vanity generation cancelled");
           setIsLoading(false);
           return;
         }
-        
-        setStatus(`Found! Mint: ${mintKeypair.publicKey.toBase58().slice(0, 8)}...shit`);
       } else {
         mintKeypair = generateRandomKeypair();
         setStatus(`Mint: ${mintKeypair.publicKey.toBase58().slice(0, 8)}...`);
@@ -83,22 +110,28 @@ export default function CreateToken() {
       
       setStatus("Building transaction...");
 
-      // Step 2: Send to server with mint pubkey
-      const response = await fetch("/api/create-token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          symbol: formData.symbol,
-          description: formData.description,
-          supply: formData.supply,
-          initialSol: parseInt(curveSettings.initialSol),
-          curvePercent: parseInt(curveSettings.curvePercent),
-          walletAddress: publicKey.toString(),
-          mintPublicKey: mintKeypair.publicKey.toBase58(),
-          socials,
+      // Step 2: Send to server with retry
+      const response = await withRetry(
+        () => fetch("/api/create-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: formData.name,
+            symbol: formData.symbol,
+            description: formData.description,
+            supply: formData.supply,
+            initialSol: parseInt(curveSettings.initialSol),
+            curvePercent: parseInt(curveSettings.curvePercent),
+            walletAddress: publicKey.toString(),
+            mintPublicKey: mintKeypair.publicKey.toBase58(),
+            socials,
+          }),
         }),
-      });
+        {
+          maxRetries: 2,
+          onRetry: (attempt) => setStatus(`Retrying... (attempt ${attempt})`)
+        }
+      );
 
       const result = await response.json();
 
@@ -109,22 +142,12 @@ export default function CreateToken() {
       }
 
       setStatus("Sign transaction in wallet...");
-
-      // Step 3: Parse transaction
-      const { Transaction } = await import("@solana/web3.js");
-      const transaction = Transaction.from(Buffer.from(result.transaction, "base64"));
-
-      // Step 4: Get connection and send transaction
-      // Note: In real implementation, you'd use wallet-adapter's sendTransaction
-      // with the mint keypair as an additional signer
-      
-      // For now, show the result
       setStatus("Token prepared! Mint: " + result.mint + " | Pool: " + result.poolId);
       setCreatedToken(result.mint);
 
-    } catch (error) {
-      console.error("Token creation error:", error);
-      setStatus("Failed: " + (error instanceof Error ? error.message : "Unknown error"));
+    } catch (err) {
+      console.error("Token creation error:", err);
+      setError(getUserFriendlyError(err));
     } finally {
       setIsLoading(false);
     }
@@ -161,25 +184,38 @@ export default function CreateToken() {
               <p className="text-shit-darker mb-4 font-semibold">
                 Connect your wallet to create a token
               </p>
-              <WalletMultiButton className="!bg-gold !text-shit-darker !font-sem-lg hover:!ibold !roundedbg-gold-light transition-colors !mx-auto" />
+              <WalletMultiButton className="!bg-gold !text-shit-darker !font-semibold hover:!bg-gold-light transition-colors !mx-auto" />
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Error Display */}
+              {error && (
+                <ErrorDisplay 
+                  error={error} 
+                  onRetry={() => setError(null)} 
+                />
+              )}
+
               {/* Status */}
               {status && (
                 <div className={`p-4 rounded-lg ${createdToken ? "bg-green-100 text-green-800" : "bg-shit-light text-shit-darker"}`}>
                   <div className="flex items-center justify-between gap-4">
                     <span className="flex-1">{status}</span>
-                    {isSearchingVanity && (
+                    {isSearching && (
                       <button
                         type="button"
-                        onClick={() => cancelVanitySearch()}
+                        onClick={stopSearch}
                         className="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition-colors whitespace-nowrap"
                       >
                         Stop
                       </button>
                     )}
                   </div>
+                  {generatedMint && (
+                    <div className="mt-2 font-mono text-sm break-all">
+                      {generatedMint.publicKey.toBase58()}
+                    </div>
+                  )}
                   {createdToken && (
                     <div className="mt-2 font-mono text-sm break-all">
                       {createdToken}
@@ -314,9 +350,14 @@ export default function CreateToken() {
                   </button>
                 </div>
                 {mintType === "vanity" && (
-                  <p className="text-xs text-shit-medium bg-shit-light p-2 rounded">
-                    Token address will end in "shit" (may take longer to create)
-                  </p>
+                  <div className="bg-shit-light p-2 rounded">
+                    <p className="text-xs text-shit-medium">
+                      <strong>Parallel Workers:</strong> Using {workerCount || "detecting..."} workers for faster search
+                    </p>
+                    <p className="text-xs text-shit-medium mt-1">
+                      Token address will end in "shit" (~1.7M attempts average)
+                    </p>
+                  </div>
                 )}
               </div>
 
