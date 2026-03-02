@@ -20,9 +20,9 @@ export default function CreateToken() {
     description: "",
   });
   const [curveSettings, setCurveSettings] = useState({
-    initialSol: "85",
-    curvePercent: "80",
-    supply: "1000000000",
+    initialSol: "69",
+    curvePercent: "100",
+    supply: "420000000",
   });
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [mintType, setMintType] = useState<"random" | "vanity">("random");
