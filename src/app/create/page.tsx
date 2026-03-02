@@ -18,12 +18,13 @@ export default function CreateToken() {
     name: "",
     symbol: "",
     description: "",
-    supply: "",
   });
   const [curveSettings, setCurveSettings] = useState({
     initialSol: "85",
     curvePercent: "80",
+    supply: "",
   });
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [mintType, setMintType] = useState<"random" | "vanity">("random");
   const [socials, setSocials] = useState({
     twitter: "",
@@ -67,7 +68,7 @@ export default function CreateToken() {
       setError("Token symbol is required.");
       return;
     }
-    if (!formData.supply || parseInt(formData.supply) < 10000000) {
+    if (!curveSettings.supply || parseInt(curveSettings.supply) < 10000000) {
       setError("Minimum supply is 10,000,000 tokens.");
       return;
     }
@@ -119,7 +120,7 @@ export default function CreateToken() {
             name: formData.name,
             symbol: formData.symbol,
             description: formData.description,
-            supply: formData.supply,
+            supply: curveSettings.supply,
             initialSol: parseInt(curveSettings.initialSol),
             curvePercent: parseInt(curveSettings.curvePercent),
             walletAddress: publicKey.toString(),
@@ -302,24 +303,6 @@ export default function CreateToken() {
                 />
               </div>
 
-              {/* Supply */}
-              <div>
-                <label className="block text-sm font-medium text-shit-darker mb-2">
-                  Total Supply * (min 10,000,000)
-                </label>
-                <input
-                  type="text"
-                  value={formData.supply}
-                  onChange={(e) => setFormData({ ...formData, supply: e.target.value.replace(/[^0-9]/g, "") })}
-                  placeholder="e.g. 1000000000"
-                  className="w-full px-4 py-3 rounded-lg border-2 border-shit-light focus:border-shit-brown focus:outline-none transition-colors"
-                  required
-                />
-                <p className="text-xs text-shit-medium mt-1">
-                  Tokens will be created with 9 decimals
-                </p>
-              </div>
-
               {/* Mint Type */}
               <div>
                 <label className="block text-sm font-medium text-shit-darker mb-2">
@@ -361,43 +344,72 @@ export default function CreateToken() {
                 )}
               </div>
 
-              {/* Curve Settings */}
-              <div className="bg-shit-light rounded-xl p-4 space-y-4">
-                <h3 className="font-semibold text-shit-darker">Bonding Curve Settings</h3>
+              {/* Curve Settings - Collapsible Advanced */}
+              <div className="bg-shit-light rounded-xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setAdvancedOpen(!advancedOpen)}
+                  className="w-full p-4 flex items-center justify-between font-semibold text-shit-darker hover:bg-shit-medium transition-colors"
+                >
+                  <span>⚙️ Advanced Settings</span>
+                  <span className={`transform transition-transform ${advancedOpen ? 'rotate-180' : ''}`}>
+                    ▼
+                  </span>
+                </button>
                 
-                <div>
-                  <label className="block text-sm font-medium text-shit-darker mb-1">
-                    SOL to Raise (Migration Threshold)
-                  </label>
-                  <input
-                    type="number"
-                    value={curveSettings.initialSol}
-                    onChange={(e) => setCurveSettings({ ...curveSettings, initialSol: e.target.value })}
-                    min="30"
-                    max="200"
-                    className="w-full px-4 py-2 rounded-lg border-2 border-shit-light focus:border-shit-brown focus:outline-none"
-                  />
-                  <p className="text-xs text-shit-medium mt-1">
-                    Pool migrates to Raydium when this SOL is raised (min 30 SOL)
-                  </p>
-                </div>
+                {advancedOpen && (
+                  <div className="p-4 pt-0 space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-shit-darker mb-1">
+                        Total Supply * (min 10,000,000)
+                      </label>
+                      <input
+                        type="text"
+                        value={curveSettings.supply}
+                        onChange={(e) => setCurveSettings({ ...curveSettings, supply: e.target.value.replace(/[^0-9]/g, "") })}
+                        placeholder="e.g. 1000000000"
+                        className="w-full px-4 py-2 rounded-lg border-2 border-shit-light focus:border-shit-brown focus:outline-none"
+                      />
+                      <p className="text-xs text-shit-medium mt-1">
+                        Tokens will be created with 9 decimals
+                      </p>
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-shit-darker mb-1">
-                    % of Supply on Curve
-                  </label>
-                  <input
-                    type="number"
-                    value={curveSettings.curvePercent}
-                    onChange={(e) => setCurveSettings({ ...curveSettings, curvePercent: e.target.value })}
-                    min="20"
-                    max="100"
-                    className="w-full px-4 py-2 rounded-lg border-2 border-shit-light focus:border-shit-brown focus:outline-none"
-                  />
-                  <p className="text-xs text-shit-medium mt-1">
-                    Remaining tokens go to creator after migration (min 20%)
-                  </p>
-                </div>
+                    <div>
+                      <label className="block text-sm font-medium text-shit-darker mb-1">
+                        SOL to Raise (Migration Threshold)
+                      </label>
+                      <input
+                        type="number"
+                        value={curveSettings.initialSol}
+                        onChange={(e) => setCurveSettings({ ...curveSettings, initialSol: e.target.value })}
+                        min="30"
+                        max="200"
+                        className="w-full px-4 py-2 rounded-lg border-2 border-shit-light focus:border-shit-brown focus:outline-none"
+                      />
+                      <p className="text-xs text-shit-medium mt-1">
+                        Pool migrates to Raydium when this SOL is raised (min 30 SOL)
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-shit-darker mb-1">
+                        % of Supply on Curve
+                      </label>
+                      <input
+                        type="number"
+                        value={curveSettings.curvePercent}
+                        onChange={(e) => setCurveSettings({ ...curveSettings, curvePercent: e.target.value })}
+                        min="20"
+                        max="100"
+                        className="w-full px-4 py-2 rounded-lg border-2 border-shit-light focus:border-shit-brown focus:outline-none"
+                      />
+                      <p className="text-xs text-shit-medium mt-1">
+                        Remaining tokens go to creator after migration (min 20%)
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Socials */}
