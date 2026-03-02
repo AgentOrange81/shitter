@@ -6,6 +6,7 @@ interface TokenMetadata {
   symbol: string;
   description?: string;
   image: string;
+  created_by?: string;
   tags?: string[];
   extensions?: {
     twitter?: string;
@@ -118,6 +119,7 @@ export async function uploadTokenMetadata(
     symbol: tokenData.symbol,
     description: tokenData.description,
     image: imageResult.ipfsUri!,
+    created_by: "Shitter",
     tags: ["shitter", "solana", "meme-coin"],
     extensions: {
       twitter: tokenData.twitter,
