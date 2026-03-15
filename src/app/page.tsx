@@ -6,10 +6,10 @@ export default function Home() {
       {/* Scrolling Banner */}
       <div className="overflow-hidden bg-emerald-600 py-3">
         <div className="animate-scroll whitespace-nowrap">
-          <span className="text-xl font-bold mx-8">
+          <span className="text-xl font-bold mx-16">
             SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! •
           </span>
-          <span className="text-xl font-bold mx-8">
+          <span className="text-xl font-bold mx-16">
             SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! •
           </span>
         </div>
