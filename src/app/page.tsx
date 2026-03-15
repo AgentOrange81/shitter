@@ -7,10 +7,10 @@ export default function Home() {
       <div className="overflow-hidden bg-emerald-600 py-3">
         <div className="animate-scroll whitespace-nowrap">
           <span className="text-xl font-bold mx-8">
-            SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! •
+            SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! •
           </span>
           <span className="text-xl font-bold mx-8">
-            SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! •
+            SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! •
           </span>
         </div>
       </div>
