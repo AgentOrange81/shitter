@@ -3,18 +3,6 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans">
-      {/* Scrolling Banner */}
-      <div className="overflow-hidden bg-emerald-600 py-3">
-        <div className="animate-scroll whitespace-nowrap">
-          <span className="text-xl font-bold mx-16">
-            SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! •
-          </span>
-          <span className="text-xl font-bold mx-16">
-            SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! • SHIT IN, SHIT OUT! •
-          </span>
-        </div>
-      </div>
-
       {/* Hero */}
       <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
         <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-4">
