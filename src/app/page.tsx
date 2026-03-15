@@ -26,8 +26,11 @@ export default function Home() {
         <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-4">
           <span className="text-emerald-500">SHIT</span>TER
         </h1>
-        <p className="text-xl text-zinc-400 max-w-md mb-12">
-          The degenshit ecosystem. Trade. Launch. Socialize.
+        <p className="text-3xl font-bold text-white mb-2">
+          Check this shit out!
+        </p>
+        <p className="text-xl text-zinc-400 mb-12">
+          Trade. Launch. Socialize.
         </p>
 
         {/* Subdomains */}
