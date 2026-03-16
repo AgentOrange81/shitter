@@ -3,9 +3,21 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
+// Pre-generate random star data once (outside component)
+const starData = Array.from({ length: 50 }, () => ({
+  width: Math.random() * 3 + 1,
+  height: Math.random() * 3 + 1,
+  left: Math.random() * 100,
+  top: Math.random() * 100,
+  delay: Math.random() * 2,
+}));
+
+// Pre-generate hit counter once (outside component)
+const initialHitCounter = 42000 + Math.floor(Math.random() * 70);
+
 export default function Home() {
   const [time, setTime] = useState("");
-  const [hitCounter, setHitCounter] = useState(0);
+  const hitCounter = initialHitCounter;
 
   useEffect(() => {
     // Live clock
@@ -15,9 +27,6 @@ export default function Home() {
     };
     updateClock();
     const interval = setInterval(updateClock, 1000);
-
-    // Fake hit counter - random between 42000-42069
-    setHitCounter(42000 + Math.floor(Math.random() * 70));
 
     return () => clearInterval(interval);
   }, []);
@@ -71,16 +80,16 @@ export default function Home() {
 
       {/* Starry Background */}
       <div className="min-h-screen bg-black relative overflow-hidden">
-        {[...Array(50)].map((_, i) => (
+        {starData.map((star, i) => (
           <div
             key={i}
             className="star absolute bg-white rounded-full"
             style={{
-              width: Math.random() * 3 + 1 + "px",
-              height: Math.random() * 3 + 1 + "px",
-              left: Math.random() * 100 + "%",
-              top: Math.random() * 100 + "%",
-              animationDelay: Math.random() * 2 + "s",
+              width: star.width + "px",
+              height: star.height + "px",
+              left: star.left + "%",
+              top: star.top + "%",
+              animationDelay: star.delay + "s",
             }}
           />
         ))}
@@ -93,123 +102,96 @@ export default function Home() {
           style={{ background: "linear-gradient(180deg, #b8860b 0%, #8b6914 50%, #5c4a0f 100%)" }}>
           <div className="animate-scroll whitespace-nowrap">
             {[...Array(10)].map((_, i) => (
-              <span key={i} className="text-xl font-bold text-black mx-12">
-                🚧 UNDER CONSTRUCTION - SHITTER.IO - LAUNCHING SOON! 🚧
+              <span key={i} className="text-cream font-mono text-sm mx-4">
+                💩 WELCOME TO SHITTER.IO — DEGEN TOKEN TRADING — LAUNCH YOUR MEME COIN — SOLANA BASED — DYOR — NOT FINANCIAL ADVICE — HODL OR DIE — 💩
               </span>
             ))}
           </div>
         </div>
 
-        {/* 3-Column Table Layout */}
-        <div className="max-w-4xl mx-auto p-4 pt-8">
+        {/* Main Content */}
+        <div className="relative z-10 container mx-auto px-4 py-8">
+          {/* Header */}
+          <header className="text-center mb-8">
+            <h1 className="text-4xl md:text-6xl font-bold text-gold neon-text mb-2">
+              💩 SHITTER.IO
+            </h1>
+            <p className="text-cream font-mono text-sm">
+              {time} | Visitors: {hitCounter.toLocaleString()}
+            </p>
+          </header>
+
+          {/* Retro Table Layout */}
           <table className="w-full table-3d" 
-            style={{ backgroundColor: "#1a1208" }} cellPadding="10">
+            style={{ backgroundColor: "#1a120f" }} cellPadding="10">
             <thead>
               <tr>
                 <th colSpan={3} className="text-center p-4" 
                   style={{ backgroundColor: "#2d1f0f" }}>
-                  <marquee direction="left" className="font-mono" 
-                    style={{ color: "#ffd700" }}>
-                    *** WELCOME TO SHITTER.IO *** YOUR SOURCE FOR DEGEN TOKEN TRADING ***
-                  </marquee>
+                  <div className="font-mono text-gold overflow-hidden">
+                    <span className="inline-block animate-scroll">
+                      *** WELCOME TO SHITTER.IO *** YOUR SOURCE FOR DEGEN TOKEN TRADING ***
+                    </span>
+                  </div>
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 {/* Left Column - Menu */}
-                <td valign="top" className="w-48" style={{ backgroundColor: "#2d1f0f" }}>
-                  <div className="text-center">
-                    <p className="font-mono text-sm mb-4" style={{ color: "#ffd700" }}>📁 MENU</p>
-                    <div className="flex flex-col gap-2">
-                      <Link href="https://screener.shitter.io" 
-                        className="bevel-button px-4 py-2 font-mono text-sm hover:opacity-80 cursor-pointer block text-center"
-                        style={{ backgroundColor: "#8b6914", color: "#ffd700" }}>
-                        📊 SCREENER
-                      </Link>
-                      <Link href="https://launch.shitter.io"
-                        className="bevel-button px-4 py-2 font-mono text-sm hover:opacity-80 cursor-pointer block text-center"
-                        style={{ backgroundColor: "#8b6914", color: "#ffd700" }}>
-                        🚀 LAUNCHPAD
-                      </Link>
-                      <Link href="https://social.shitter.io"
-                        className="bevel-button px-4 py-2 font-mono text-sm hover:opacity-80 cursor-pointer block text-center"
-                        style={{ backgroundColor: "#8b6914", color: "#ffd700" }}>
-                        💬 SOCIAL
-                      </Link>
-                    </div>
-                    <div className="mt-8 font-mono text-xs" style={{ color: "#8b7355" }}>
-                      <p>🕐 {time}</p>
-                      <p className="mt-2">Visitors:</p>
-                      <p className="font-mono" style={{ color: "#ffd700" }}>{hitCounter.toLocaleString()}</p>
-                    </div>
+                <td className="align-top w-48" style={{ backgroundColor: "#2d1f0f" }}>
+                  <div className="font-mono text-sm space-y-2">
+                    <Link href="/tokens" 
+                      className="bevel-button px-3 py-2 font-mono text-sm hover:opacity-80 cursor-pointer block text-center"
+                      style={{ backgroundColor: "#8b6914", color: "#ffd700" }}>
+                      📊 TOKENS
+                    </Link>
+                    <Link href="/create" 
+                      className="bevel-button px-3 py-2 font-mono text-sm hover:opacity-80 cursor-pointer block text-center"
+                      style={{ backgroundColor: "#8b6914", color: "#ffd700" }}>
+                      🚀 LAUNCHPAD
+                    </Link>
+                    <Link href="https://social.shitter.io" 
+                      className="bevel-button px-3 py-2 font-mono text-sm hover:opacity-80 cursor-pointer block text-center"
+                      style={{ backgroundColor: "#8b6914", color: "#ffd700" }}>
+                      💬 SOCIAL
+                    </Link>
                   </div>
                 </td>
 
                 {/* Center Column - Main Content */}
-                <td valign="top" style={{ backgroundColor: "#1a1208" }}>
-                  <div className="text-center">
-                    <h1 className="font-mono text-4xl neon-text mb-4" 
-                      style={{ color: "#ffd700", fontFamily: '"Comic Sans MS", cursive' }}>
-                      SHITTER.IO
-                    </h1>
-                    <p className="font-mono mb-6" style={{ color: "#b8860b" }}>
-                      ★ Trade. Launch. Socialize. ★
+                <td className="align-top" style={{ backgroundColor: "#1a120f" }}>
+                  <div className="font-mono text-left text-xs md:text-sm space-y-3 md:space-y-4 p-2 md:p-4 rounded" 
+                    style={{ backgroundColor: "#2d1f0f", color: "#d4a574" }}>
+                    <p>Welcome to Shitter — the ultimate degen trading platform on Solana.</p>
+                    <ul className="list-disc list-inside space-y-1 md:space-y-2 ml-2 md:ml-4">
+                      <li>🎯 <span style={{ color: "#ffd700" }}>Token Screener</span> — Real-time analytics</li>
+                      <li>🚀 <span style={{ color: "#ffd700" }}>Launchpad</span> — Deploy your own tokens</li>
+                      <li>💬 <span style={{ color: "#ffd700" }}>Social</span> — Connect with degens</li>
+                    </ul>
+                    <p className="text-center mt-3 md:mt-4" style={{ color: "#b8860b" }}>
+                      ⚠️ WARNING: HIGH RISK — DYOR ⚠️
                     </p>
-                    <div className="font-mono text-left text-sm space-y-4 p-4 rounded" 
-                      style={{ backgroundColor: "#2d1f0f", color: "#d4a574" }}>
-                      <p>Welcome to Shitter — the ultimate degen trading platform on Solana.</p>
-                      <ul className="list-disc list-inside space-y-2 ml-4">
-                        <li>🎯 <span style={{ color: "#ffd700" }}>Token Screener</span> — Real-time analytics</li>
-                        <li>🚀 <span style={{ color: "#ffd700" }}>Launchpad</span> — Deploy your own tokens</li>
-                        <li>💬 <span style={{ color: "#ffd700" }}>Social</span> — Connect with degens</li>
-                      </ul>
-                      <p className="text-center mt-4" style={{ color: "#b8860b" }}>
-                        ⚠️ WARNING: HIGH RISK — DYOR ⚠️
-                      </p>
-                    </div>
                   </div>
                 </td>
 
-                {/* Right Column - News */}
-                <td valign="top" className="w-48" style={{ backgroundColor: "#2d1f0f" }}>
-                  <div className="text-center">
-                    <p className="font-mono text-sm mb-4" style={{ color: "#ffd700" }}>📰 NEWS</p>
-                    <div className="font-mono text-xs space-y-4" style={{ color: "#8b7355" }}>
-                      <div className="border-b border-amber-900 pb-2">
-                        <p style={{ color: "#ffd700" }}>2024-01-15</p>
-                        <p>Shitter v1.0 launched! 🚀</p>
-                      </div>
-                      <div className="border-b border-amber-900 pb-2">
-                        <p style={{ color: "#ffd700" }}>2024-02-01</p>
-                        <p>Screener上线! 📊</p>
-                      </div>
-                      <div className="border-b border-amber-900 pb-2">
-                        <p style={{ color: "#ffd700" }}>2024-03-10</p>
-                        <p>Social module added 💬</p>
-                      </div>
-                      <div>
-                        <p className="animate-pulse" style={{ color: "#ffd700" }}>NEW!</p>
-                        <p>Connect wallet to start!</p>
-                      </div>
-                    </div>
+                {/* Right Column - News (Bottom on mobile, hidden on small screens) */}
+                <td className="align-top w-48 hidden md:table-cell" style={{ backgroundColor: "#2d1f0f" }}>
+                  <div className="font-mono text-xs space-y-2">
+                    <p className="text-gold font-bold border-b border-amber-900 pb-1">LATEST</p>
+                    <p className="text-cream">• New token launches daily</p>
+                    <p className="text-cream">• Community driven</p>
+                    <p className="text-cream">• 100% degen approved</p>
                   </div>
                 </td>
               </tr>
             </tbody>
-            <tfoot>
-              <tr>
-                <td colSpan={3} className="text-center p-2" style={{ backgroundColor: "#2d1f0f" }}>
-                  <p className="text-xs font-mono" style={{ color: "#5c4a0f" }}>
-                    Best viewed in Netscape Navigator 4.0 • 800x600 resolution • 16M colors
-                  </p>
-                  <p className="text-xs font-mono mt-1" style={{ color: "#4a3a0d" }}>
-                    © 2024 Shitter.io • Send bugs to /dev/null
-                  </p>
-                </td>
-              </tr>
-            </tfoot>
           </table>
+
+          {/* Footer */}
+          <footer className="text-center mt-8 font-mono text-xs text-amber-700">
+            <p>© 2026 SHITTER.IO — ALL RIGHTS RESERVED — BUILT ON SOLANA</p>
+          </footer>
         </div>
       </div>
     </>
